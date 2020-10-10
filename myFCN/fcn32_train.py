@@ -95,12 +95,13 @@ def main():
         start_epoch = checkpoint['epoch']
         start_iteration = checkpoint['iteration']
     else:
-        vgg16 = myfcn.models.VGG16(pretrained=False)
+        vgg16 = myfcn.models.VGG16(pretrained=True)
         model.copy_params_from_vgg16(vgg16)
     if cuda:
         model = model.cuda()
     
     #3.optimizer
+    print(get_parameters(model, bias=False))
     optim = torch.optim.SGD([
                 {'params': get_parameters(model, bias=False)},
                 {'params': get_parameters(model, bias=True), 
@@ -110,7 +111,7 @@ def main():
             momentum=args.momentum,
             weight_decay=args.weight_decay)
     if args.resume:
-        optim.load_state_dict(['optim_state_dict'])
+        optim.load_state_dict(checkpoint['optim_state_dict'])
 
     trainer = myfcn.Trainer(
         cuda=cuda,
@@ -124,7 +125,7 @@ def main():
     )
     trainer.epoch = start_epoch
     trainer.iteration = start_iteration
-    trainer.train()
+    #trainer.train()
 
 if __name__ == '__main__':
     main()
