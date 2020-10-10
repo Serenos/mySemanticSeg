@@ -57,6 +57,7 @@ class VOCClassSegBase(data.Dataset):
                     'img': img_file,
                     'lbl': lbl_file,
                 })
+            #print(len(self.files[split]))
 
     def __len__(self):
         return len(self.files[self.split])
@@ -106,11 +107,13 @@ class VOC2011ClassSeg(VOCClassSegBase):
             pkg_root, 'ext/fcn.berkeleyvision.org',
             'data/pascal/seg11valid.txt')
         dataset_dir = osp.join(self.root, 'VOC/VOCdevkit/VOC2012')
+        #print(imgsets_file)
         for did in open(imgsets_file):
             did = did.strip()
             img_file = osp.join(dataset_dir, 'JPEGImages/%s.jpg' % did)
             lbl_file = osp.join(dataset_dir, 'SegmentationClass/%s.png' % did)
             self.files['seg11valid'].append({'img': img_file, 'lbl': lbl_file})
+        #print(len(self.files['seg11valid']))
 
 
 class VOC2012ClassSeg(VOCClassSegBase):
@@ -144,6 +147,7 @@ class SBDClassSeg(VOCClassSegBase):
                     'img': img_file,
                     'lbl': lbl_file,
                 })
+            #print(len(self.files[split]))
 
     def __getitem__(self, index):
         data_file = self.files[self.split][index]

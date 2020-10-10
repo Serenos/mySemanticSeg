@@ -47,13 +47,13 @@ def main():
     # configurations (same configuration as original work)
     # https://github.com/shelhamer/fcn.berkeleyvision.org
     parser.add_argument(
-        '--max-iteration', type=int, default=100000, help='max iteration'
+        '--max_iteration', type=int, default=8500, help='max iteration'
     )
     parser.add_argument(
         '--lr', type=float, default=1.0e-10, help='learning rate',
     )
     parser.add_argument(
-        '--weight-decay', type=float, default=0.0005, help='weight decay',
+        '--weight_decay', type=float, default=0.0005, help='weight decay',
     )
     parser.add_argument(
         '--momentum', type=float, default=0.99, help='momentum',
@@ -79,10 +79,12 @@ def main():
     train_loader = torch.utils.data.DataLoader(
         myfcn.dataset.SBDClassSeg(root, split='train', transform=True),
         batch_size=1, shuffle=True, **kwargs)
+    print('train_loader', len(train_loader))
     val_loader = torch.utils.data.DataLoader(
         myfcn.dataset.VOC2011ClassSeg(
             root, split='seg11valid', transform=True),
         batch_size=1, shuffle=False, **kwargs)
+    print('val_loader', len(val_loader))
     #2.models
     start_epoch = 0
     start_iteration = 0
@@ -105,7 +107,8 @@ def main():
                 'lr': args.lr * 2, 'weigth_decay': 0},
             ], 
             lr=args.lr, 
-            momentum=args.momentum)
+            momentum=args.momentum,
+            weight_decay=args.weight_decay)
     if args.resume:
         optim.load_state_dict(['optim_state_dict'])
 
