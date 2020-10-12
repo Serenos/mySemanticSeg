@@ -42,7 +42,7 @@ def main():
     parser = argparse.ArgumentParser(
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
-    parser.add_argument('-g', '--gpu', type=int, required=True, help='gpu id')
+    parser.add_argument('-g', '--gpu', type=str, required=True, help='gpu id')
     parser.add_argument('--resume', help='checkpoint path')
     # configurations (same configuration as original work)
     # https://github.com/shelhamer/fcn.berkeleyvision.org
@@ -61,6 +61,7 @@ def main():
     args = parser.parse_args()
     args.model = 'FCN32s'
     os.environ['CUDA_VISIBLE_DEVICES'] = str(args.gpu)
+    print('CUDA_VISIBLE_DEVICES',os.environ['CUDA_VISIBLE_DEVICES'])
     cuda = torch.cuda.is_available()
 
     now = datetime.datetime.now()
@@ -75,7 +76,7 @@ def main():
     kwargs = {'num_workers': 4, 'pin_memory': True} if cuda else {}
 
 
-    #1.datasets
+    #---------------------------1.datasets
     train_loader = torch.utils.data.DataLoader(
         myfcn.dataset.SBDClassSeg(root, split='train', transform=True),
         batch_size=1, shuffle=True, **kwargs)
@@ -85,7 +86,7 @@ def main():
             root, split='seg11valid', transform=True),
         batch_size=1, shuffle=False, **kwargs)
     print('val_loader', len(val_loader))
-    #2.models
+    #----------------------------2.models
     start_epoch = 0
     start_iteration = 0
     model = myfcn.models.FCN32(n_class=21)
@@ -99,9 +100,12 @@ def main():
         model.copy_params_from_vgg16(vgg16)
     if cuda:
         model = model.cuda()
-    
-    #3.optimizer
-    print(get_parameters(model, bias=False))
+    #parallel computing using dataparallel
+    model = torch.nn.DataParallel(model,device_ids=[0,1,2,3])
+
+    # ----------------------------3.optimizer
+    for i in get_parameters(model, bias=False):
+        print(i.size())
     optim = torch.optim.SGD([
                 {'params': get_parameters(model, bias=False)},
                 {'params': get_parameters(model, bias=True), 
@@ -125,7 +129,7 @@ def main():
     )
     trainer.epoch = start_epoch
     trainer.iteration = start_iteration
-    #trainer.train()
+    trainer.train()
 
 if __name__ == '__main__':
     main()

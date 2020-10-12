@@ -189,11 +189,12 @@ class Trainer(object):
             data, target = Variable(data), Variable(target)
             self.optim.zero_grad()
             score = self.model(data)
-
+            print('score: ', score.size())
             loss = cross_entropy2d(score, target,
                                    size_average=self.size_average)
             loss /= len(data)
             loss_data = loss.data.item()
+            #print('loss: ',loss_data)
             if np.isnan(loss_data):
                 raise ValueError('loss is nan while training')
             loss.backward()
@@ -201,7 +202,9 @@ class Trainer(object):
 
             metrics = []
             lbl_pred = score.data.max(1)[1].cpu().numpy()[:, :, :]
+            print('lbl_pred: ', lbl_pred.shape)
             lbl_true = target.data.cpu().numpy()
+            print('lbl_true: ', lbl_true.shape)
             acc, acc_cls, mean_iu, fwavacc = \
                 myfcn.utils.label_accuracy_score(
                     lbl_true, lbl_pred, n_class=n_class)
